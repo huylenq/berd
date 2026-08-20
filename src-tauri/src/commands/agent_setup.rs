@@ -1092,6 +1092,7 @@ mod tests {
         assert_eq!(crate_check_id("copilot-acp"), "ai-agent-copilot");
         assert_eq!(crate_check_id("amp-acp"), "ai-agent-amp");
         assert_eq!(crate_check_id("pi-acp"), "ai-agent-pi");
+        assert_eq!(crate_check_id("hermes-acp"), "ai-agent-hermes");
     }
 
     #[test]

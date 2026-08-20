@@ -1,5 +1,6 @@
 import type { AcpProvider } from "@/shared/api/acp";
 import type { ProviderCatalogEntry } from "@/shared/types/providers";
+import { HERMES_PATH_BINARIES } from "@/features/providers/lib/hermesDiscovery";
 
 export const CURATED_PROVIDER_CATALOG: ProviderCatalogEntry[] = [
   {
@@ -79,6 +80,29 @@ export const CURATED_PROVIDER_CATALOG: ProviderCatalogEntry[] = [
     supportsInstall: true,
     supportsAuth: true,
     supportsAuthStatus: true,
+  },
+  {
+    // PATH discovery matches Buzz (`hermes-acp`, then `hermes`). Sessions
+    // call Goose `setProvider("hermes-acp")`. The lockfile pins
+    // huylenq/goose @ 1f1c2a4d (063694c + hermes-acp only, plus GOOSE_MODE), which registers
+    // that provider and spawns `hermes-acp` or `hermes acp`. Berd does not
+    // write ~/.hermes.
+    id: "hermes-acp",
+    displayName: "Hermes Agent",
+    category: "agent",
+    description: "Nous Research's open-source agent",
+    setupMethod: "cli_auth",
+    binaryName: "hermes-acp",
+    binaryNames: HERMES_PATH_BINARIES,
+    docsUrl:
+      "https://hermes-agent.nousresearch.com/docs/user-guide/features/acp",
+    group: "default",
+    aliases: ["hermes-acp", "hermes-agent", "hermes"],
+    // Discovery only: Berd must not install into or mutate ~/.hermes.
+    supportsInstall: false,
+    supportsAuth: false,
+    supportsAuthStatus: false,
+    sessionLaunchSupported: true,
   },
   // full pi support in a future update
   // {

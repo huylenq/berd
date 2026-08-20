@@ -333,4 +333,61 @@ describe("useAgentModelPickerState", () => {
       { id: "codex-acp", label: "Codex", readiness: "ready" },
     ]);
   });
+
+  it("includes Hermes in the session picker when it is ready", () => {
+    mockUseAgentProviderStatus.mockReturnValue({
+      readyAgentIds: new Set(["goose", "hermes-acp"]),
+      agentReadiness: new Map([
+        ["goose", "ready"],
+        ["hermes-acp", "ready"],
+      ]),
+      loading: false,
+      refresh: mockRefreshAgentProviderStatus,
+    });
+
+    const { result } = renderHook(() =>
+      useAgentModelPickerState({
+        providers: [
+          { id: "hermes-acp", label: "Hermes Agent" },
+          { id: "codex-acp", label: "Codex" },
+        ],
+        selectedProvider: "goose",
+        onProviderSelected: vi.fn(),
+      }),
+    );
+
+    expect(result.current.pickerAgents.map((agent) => agent.id)).toEqual([
+      "goose",
+      "hermes-acp",
+      "codex-acp",
+    ]);
+  });
+
+  it("omits harnesses Goose cannot start from the session picker", () => {
+    mockUseAgentProviderStatus.mockReturnValue({
+      readyAgentIds: new Set(["goose"]),
+      agentReadiness: new Map([
+        ["goose", "ready"],
+        ["missing-acp", "unavailable"],
+      ]),
+      loading: false,
+      refresh: mockRefreshAgentProviderStatus,
+    });
+
+    const { result } = renderHook(() =>
+      useAgentModelPickerState({
+        providers: [
+          { id: "missing-acp", label: "Missing Agent" },
+          { id: "codex-acp", label: "Codex" },
+        ],
+        selectedProvider: "goose",
+        onProviderSelected: vi.fn(),
+      }),
+    );
+
+    expect(result.current.pickerAgents.map((agent) => agent.id)).toEqual([
+      "goose",
+      "codex-acp",
+    ]);
+  });
 });

@@ -1065,6 +1065,7 @@ describe("acpCreateSession", () => {
     "copilot-acp",
     "amp-acp",
     "cursor-agent",
+    "hermes-acp",
   ])("keeps the %s harness outside Goose provider policy", async (harnessId) => {
     await setRuntimeConfig(managedRuntimeConfig);
     mockNewSession.mockResolvedValue({ sessionId: `session-${harnessId}` });
@@ -1082,6 +1083,27 @@ describe("acpCreateSession", () => {
       `session-${harnessId}`,
       "harness-model",
       noRequestModelContext(harnessId),
+    );
+  });
+
+  it.each([
+    "hermes",
+    "hermes-agent",
+  ])("canonicalizes %s to hermes-acp before creating a Goose session", async (alias) => {
+    await setRuntimeConfig(managedRuntimeConfig);
+    mockNewSession.mockResolvedValue({ sessionId: "session-hermes" });
+    const { acpCreateSession } = await import("../acp");
+
+    await acpCreateSession(alias, "/tmp/project");
+
+    expect(mockNewSession).toHaveBeenCalledWith("/tmp/project", {
+      providerId: "hermes-acp",
+      projectId: undefined,
+      personaId: undefined,
+    });
+    expect(mockSetProvider).toHaveBeenCalledWith(
+      "session-hermes",
+      "hermes-acp",
     );
   });
 });

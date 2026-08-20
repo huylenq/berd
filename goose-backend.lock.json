@@ -1,7 +1,7 @@
 {
-  "repo": "https://github.com/aaif-goose/goose.git",
-  "ref": "main",
-  "commit": "063694cf769269c1f151416605687991fdcbc496",
+  "repo": "https://github.com/huylenq/goose.git",
+  "ref": "cursor/hermes-acp-provider-0264",
+  "commit": "1f1c2a4d9c57f1dde62885809cddf60f672501df",
   "package": "goose-cli",
   "bin": "goose"
 }

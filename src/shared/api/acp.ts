@@ -13,6 +13,7 @@ import {
   resolveAgentProviderCatalogId,
 } from "@/features/providers/providerCatalog";
 import { CURATED_PROVIDER_CATALOG_BY_ID } from "@/features/providers/curatedProviders";
+import { assertGooseCanSetProvider } from "@/features/providers/lib/gooseSessionProviders";
 import {
   setActiveMessageId,
   clearActiveMessageId,
@@ -332,15 +333,16 @@ function resolveGooseSessionSelection(
     throw new Error(`Invalid model id: ${modelId}`);
   }
   const concreteModelId = normalizeConcreteModelId(modelId);
-  // Agent harnesses are outside Goose model-provider policy. Everything else
-  // is resolved from runtime policy directly; a missing model catalog entry
-  // must not turn into an allowlist bypass while catalogs are still loading.
+  // Agent harnesses are outside Goose model-provider policy. Canonicalize
+  // aliases first so `"hermes"` becomes the Goose provider id `hermes-acp`
+  // instead of falling through to model-provider allowlisting.
+  const catalogId = resolveAgentProviderCatalogId(providerId) ?? providerId;
   if (
-    providerId !== "goose" &&
-    CURATED_PROVIDER_CATALOG_BY_ID.get(providerId)?.category === "agent"
+    catalogId !== "goose" &&
+    CURATED_PROVIDER_CATALOG_BY_ID.get(catalogId)?.category === "agent"
   ) {
     return {
-      providerId,
+      providerId: catalogId,
       ...(concreteModelId ? { modelId: concreteModelId } : {}),
     };
   }
@@ -417,6 +419,7 @@ export async function acpCreateSession(
   const selection = resolveGooseSessionSelection(providerId, options.modelId);
   providerId = selection.providerId;
   options = { ...options, modelId: selection.modelId };
+  assertGooseCanSetProvider(providerId);
   // Only the "goose" sentinel should rely on backend defaults. Concrete
   // model providers must be sent even without a model so Goose does not try to
   // resolve a missing global GOOSE_PROVIDER.

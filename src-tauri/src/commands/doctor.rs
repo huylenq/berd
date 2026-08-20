@@ -197,7 +197,11 @@ struct LocalCheckMeta {
 
 struct LocalPathCheck {
     meta: LocalCheckMeta,
-    binary_name: &'static str,
+    /// Tried in order so a dedicated ACP launcher can win over a generic CLI.
+    binary_names: &'static [&'static str],
+    /// Hermes Passes when `hermes-acp` or `hermes` is on PATH. Goose can then
+    /// `setProvider("hermes-acp")` against the pinned sidecar.
+    found_status: CheckStatus,
     pass_message: &'static str,
     fail_message: &'static str,
 }
@@ -274,8 +278,28 @@ const NODE_RUNTIME_CHECK: LocalCheckMeta = LocalCheckMeta {
     debug_output: None,
 };
 
+const HERMES_AGENT_CHECK: LocalPathCheck = LocalPathCheck {
+    meta: LocalCheckMeta {
+        id: "ai-agent-hermes",
+        label: "Hermes Agent",
+        category: AGENTS_CATEGORY,
+        category_label: AGENTS_CATEGORY_LABEL,
+        fix: None,
+        // Docs only — Berd must not install into or mutate ~/.hermes.
+        fix_url: Some("https://hermes-agent.nousresearch.com/docs/user-guide/features/acp"),
+        debug_output: None,
+    },
+    // Keep in sync with HERMES_PATH_BINARIES in
+    // src/features/providers/lib/hermesDiscovery.ts
+    // Buzz Desktop / Zed / VS Code: prefer `hermes-acp`, else `hermes`.
+    binary_names: &["hermes-acp", "hermes"],
+    found_status: CheckStatus::Pass,
+    pass_message: "Hermes ACP launcher found on PATH",
+    fail_message: "Hermes Agent is not on PATH. Install Hermes and ensure `hermes-acp` or `hermes` resolves (often ~/.local/bin).",
+};
+
 const LOCAL_DOCTOR_REGISTRY: LocalDoctorRegistry<'static> = LocalDoctorRegistry {
-    path_checks: &[],
+    path_checks: &[HERMES_AGENT_CHECK],
     command_checks: LOCAL_COMMAND_CHECKS,
     custom_checks: LOCAL_CUSTOM_CHECKS,
 };
@@ -356,9 +380,15 @@ async fn run_local_checks(
 }
 
 async fn run_local_path_check(check: &LocalPathCheck, extended_path: &str) -> DoctorCheck {
-    let path = resolve_binary_path(check.binary_name, extended_path).await;
+    let mut path = None;
+    for binary_name in check.binary_names {
+        path = resolve_binary_path(binary_name, extended_path).await;
+        if path.is_some() {
+            break;
+        }
+    }
     let (status, message) = if path.is_some() {
-        (CheckStatus::Pass, check.pass_message)
+        (check.found_status, check.pass_message)
     } else {
         (CheckStatus::Fail, check.fail_message)
     };
@@ -2491,7 +2521,8 @@ mod tests {
         };
         let checks = [LocalPathCheck {
             meta: fixture_meta(),
-            binary_name,
+            binary_names: &[binary_name],
+            found_status: CheckStatus::Pass,
             pass_message: "path found",
             fail_message: "path missing",
         }];
@@ -2507,6 +2538,66 @@ mod tests {
         assert_eq!(results[0].status, CheckStatus::Pass);
         assert_eq!(results[0].message, "path found");
         assert!(results[0].path.is_some());
+    }
+
+    #[tokio::test]
+    async fn hermes_agent_check_prefers_hermes_acp_then_hermes() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        write_fake_binary(dir.path(), "hermes");
+        write_fake_binary(dir.path(), "hermes-acp");
+
+        let only_acp =
+            run_local_path_check(&HERMES_AGENT_CHECK, &dir.path().to_string_lossy()).await;
+        assert_eq!(only_acp.status, CheckStatus::Pass);
+        assert_eq!(only_acp.id, "ai-agent-hermes");
+        assert_eq!(only_acp.category, "agents");
+        assert!(
+            only_acp
+                .path
+                .as_deref()
+                .is_some_and(|path| path.contains("hermes-acp")),
+            "expected hermes-acp to win, got {:?}",
+            only_acp.path
+        );
+
+        let fallback_dir = tempfile::tempdir().expect("tempdir");
+        write_fake_binary(fallback_dir.path(), "hermes");
+        let fallback =
+            run_local_path_check(&HERMES_AGENT_CHECK, &fallback_dir.path().to_string_lossy()).await;
+        assert_eq!(fallback.status, CheckStatus::Pass);
+        assert!(
+            fallback
+                .path
+                .as_deref()
+                .is_some_and(|path| path.ends_with("hermes") || path.ends_with("hermes.exe")),
+            "expected hermes fallback, got {:?}",
+            fallback.path
+        );
+
+        let missing = run_local_path_check(
+            &HERMES_AGENT_CHECK,
+            &dir.path().join("empty").to_string_lossy(),
+        )
+        .await;
+        assert_eq!(missing.status, CheckStatus::Fail);
+        assert!(missing.path.is_none());
+        assert!(missing.message.contains("hermes-acp"));
+    }
+
+    fn write_fake_binary(dir: &Path, name: &str) {
+        let path = if cfg!(target_os = "windows") {
+            dir.join(format!("{name}.exe"))
+        } else {
+            dir.join(name)
+        };
+        std::fs::write(&path, b"").expect("write fake binary");
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mut permissions = std::fs::metadata(&path).expect("metadata").permissions();
+            permissions.set_mode(0o755);
+            std::fs::set_permissions(&path, permissions).expect("chmod");
+        }
     }
 
     fn pinned_node_version() -> &'static str {

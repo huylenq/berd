@@ -127,6 +127,7 @@ describe("useProviderModels", () => {
       "codex-acp",
       "copilot-acp",
       "cursor-agent",
+      "hermes-acp",
     ]);
 
     act(() => {
@@ -151,6 +152,7 @@ describe("useProviderModels", () => {
       "codex-acp",
       "copilot-acp",
       "cursor-agent",
+      "hermes-acp",
     ]);
 
     act(() => {

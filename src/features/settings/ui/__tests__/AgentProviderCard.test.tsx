@@ -325,6 +325,37 @@ describe("AgentProviderCard", () => {
     ).toHaveClass("ml-10");
   });
 
+  it("shows an explicit unavailable state instead of a ready tick", () => {
+    renderCard(
+      <AgentProviderCard
+        provider={createProvider({
+          id: "future-acp",
+          displayName: "Future Agent",
+          description: "Harness the bundled Goose backend does not provide",
+          supportsAuth: false,
+          supportsInstall: false,
+        })}
+        statusLoading={false}
+        readiness={"unavailable" satisfies AgentProviderReadiness}
+      />,
+    );
+
+    expect(
+      screen.getByRole("status", { name: "Unavailable" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Sessions cannot start. The bundled Goose backend does not provide this harness.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /sign in/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /install/i }),
+    ).not.toBeInTheDocument();
+  });
+
   it("uses an outlined sign-in action", () => {
     renderCard(
       <AgentProviderCard
