@@ -711,6 +711,33 @@ describe("provider wire translation", () => {
     });
   });
 
+  it.each(["hermes", "hermes-agent"])(
+    "rewrites setProvider(%s) to Goose provider id hermes-acp",
+    async (alias) => {
+      const { setProvider } = await import("../acpApi");
+
+      await setProvider("session-9", alias);
+
+      expect(mocks.setSessionConfigOption).toHaveBeenCalledWith({
+        sessionId: "session-9",
+        configId: "provider",
+        value: "hermes-acp",
+      });
+    },
+  );
+
+  it("rewrites newSession Hermes aliases to hermes-acp", async () => {
+    const { newSession } = await import("../acpApi");
+
+    await newSession("/tmp/project", { providerId: "hermes" });
+
+    expect(mocks.newSession).toHaveBeenCalledWith({
+      cwd: "/tmp/project",
+      mcpServers: [],
+      _meta: { provider: "hermes-acp" },
+    });
+  });
+
   it("gates setSessionConfigOption(provider=…) the same way as setProvider", async () => {
     const { setSessionConfigOption } = await import("../acpApi");
 
@@ -722,6 +749,21 @@ describe("provider wire translation", () => {
       value: "hermes-acp",
     });
   });
+
+  it.each(["hermes", "hermes-agent"])(
+    "rewrites setSessionConfigOption(provider=%s) to hermes-acp",
+    async (alias) => {
+      const { setSessionConfigOption } = await import("../acpApi");
+
+      await setSessionConfigOption("session-9", "provider", alias);
+
+      expect(mocks.setSessionConfigOption).toHaveBeenCalledWith({
+        sessionId: "session-9",
+        configId: "provider",
+        value: "hermes-acp",
+      });
+    },
+  );
 
   it("sets a generic session config option", async () => {
     const { setSessionConfigOption } = await import("../acpApi");

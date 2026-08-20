@@ -2,7 +2,10 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { beforeEach, describe, expect, it } from "vitest";
 import { discoverAcpProviders } from "@/shared/api/acp";
-import { isExternalAgentProvider } from "@/shared/api/acpPersonaHandoff";
+import {
+  isExternalAgentProvider,
+  toWireProviderId,
+} from "@/shared/api/acpPersonaHandoff";
 import { crateCheckIdToProviderId } from "./lib/agentIdMap";
 import { gooseCanSetProvider } from "./lib/gooseSessionProviders";
 import { HERMES_PATH_BINARIES } from "./lib/hermesDiscovery";
@@ -119,6 +122,12 @@ describe("Hermes Agent harness", () => {
     expect(gooseCanSetProvider("hermes-agent")).toBe(true);
     expect(gooseCanSetProvider("claude-acp")).toBe(true);
     expect(gooseCanSetProvider("goose")).toBe(true);
+  });
+
+  it("sends only hermes-acp on the Goose wire, never the alias", () => {
+    expect(toWireProviderId("hermes-acp")).toBe("hermes-acp");
+    expect(toWireProviderId("hermes")).toBe("hermes-acp");
+    expect(toWireProviderId("hermes-agent")).toBe("hermes-acp");
   });
 
   it("is ready when Doctor finds hermes-acp or hermes on PATH", () => {

@@ -16,26 +16,31 @@
  */
 
 import { getDefaultGooseModelProviderId } from "@/features/runtime-config/defaults";
-import { getCatalogEntry } from "@/features/providers/providerCatalog";
+import {
+  getCatalogEntry,
+  resolveAgentProviderCatalogId,
+} from "@/features/providers/providerCatalog";
 import { useDefaultProviderReadinessStore } from "@/features/providers/stores/defaultProviderReadinessStore";
 
 export const GOOSE_PROVIDER_ID = "goose";
 
 /**
- * Translate a UI provider id into the value sent to the backend. Only the
- * `"goose"` agent sentinel is rewritten to the concrete default model provider;
- * every real provider id (`claude-acp`, `codex-acp`, `databricks_v2`, ...)
- * passes through unchanged.
+ * Translate a UI provider id into the value sent to Goose.
+ *
+ * The `"goose"` agent sentinel is rewritten to the concrete default model
+ * provider. Agent aliases (`hermes`, `hermes-agent`) become the catalog id
+ * Goose actually registers (`hermes-acp`). Model providers and already-
+ * canonical harness ids pass through unchanged.
  */
 export function toWireProviderId(providerId: string): string {
-  if (providerId !== GOOSE_PROVIDER_ID) {
-    return providerId;
+  if (providerId === GOOSE_PROVIDER_ID) {
+    const readiness = useDefaultProviderReadinessStore.getState().readiness;
+    return readiness?.status === "ready"
+      ? readiness.providerId
+      : (getDefaultGooseModelProviderId() ?? providerId);
   }
 
-  const readiness = useDefaultProviderReadinessStore.getState().readiness;
-  return readiness?.status === "ready"
-    ? readiness.providerId
-    : (getDefaultGooseModelProviderId() ?? providerId);
+  return resolveAgentProviderCatalogId(providerId) ?? providerId;
 }
 
 /**

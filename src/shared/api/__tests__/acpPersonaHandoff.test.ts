@@ -14,9 +14,11 @@ import {
   useRuntimeConfigStore,
 } from "@/shared/runtime-config/runtimeConfigStore";
 import { useDefaultProviderReadinessStore } from "@/features/providers/stores/defaultProviderReadinessStore";
+import { useProviderCatalogStore } from "@/features/providers/stores/providerCatalogStore";
 
 beforeEach(() => {
   __resetAllPersonaHandoffs();
+  useProviderCatalogStore.getState().reset();
   useRuntimeConfigStore.setState({
     loaded: true,
     result: INITIAL_RUNTIME_CONFIG_RESULT,
@@ -75,6 +77,12 @@ describe("toWireProviderId", () => {
     expect(toWireProviderId("databricks_v2")).toBe("databricks_v2");
     expect(toWireProviderId("claude-acp")).toBe("claude-acp");
     expect(toWireProviderId("codex-acp")).toBe("codex-acp");
+    expect(toWireProviderId("hermes-acp")).toBe("hermes-acp");
+  });
+
+  it("rewrites Hermes aliases to the Goose provider id hermes-acp", () => {
+    expect(toWireProviderId("hermes")).toBe("hermes-acp");
+    expect(toWireProviderId("hermes-agent")).toBe("hermes-acp");
   });
 });
 

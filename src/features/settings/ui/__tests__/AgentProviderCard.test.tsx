@@ -329,9 +329,9 @@ describe("AgentProviderCard", () => {
     renderCard(
       <AgentProviderCard
         provider={createProvider({
-          id: "hermes-acp",
-          displayName: "Hermes Agent",
-          description: "Nous Research's open-source agent",
+          id: "future-acp",
+          displayName: "Future Agent",
+          description: "Harness the bundled Goose backend does not provide",
           supportsAuth: false,
           supportsInstall: false,
         })}

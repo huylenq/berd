@@ -256,6 +256,7 @@ export async function setSessionConfigOption(
 ): Promise<AcpSessionConfigSnapshots> {
   if (configId === "provider") {
     assertGooseCanSetProvider(value);
+    value = toWireProviderId(value);
   }
   const sid = sessionId.slice(0, 8);
   const tClient = performance.now();

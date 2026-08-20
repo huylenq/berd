@@ -199,7 +199,8 @@ struct LocalPathCheck {
     meta: LocalCheckMeta,
     /// Tried in order so a dedicated ACP launcher can win over a generic CLI.
     binary_names: &'static [&'static str],
-    /// PATH presence is not the same as "sessions can start". Hermes uses Warn.
+    /// Hermes Passes when `hermes-acp` or `hermes` is on PATH. Goose can then
+    /// `setProvider("hermes-acp")` against the pinned sidecar.
     found_status: CheckStatus,
     pass_message: &'static str,
     fail_message: &'static str,
