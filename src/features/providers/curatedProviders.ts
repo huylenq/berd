@@ -84,7 +84,7 @@ export const CURATED_PROVIDER_CATALOG: ProviderCatalogEntry[] = [
   {
     // PATH discovery matches Buzz (`hermes-acp`, then `hermes`). Sessions
     // call Goose `setProvider("hermes-acp")`. The lockfile pins
-    // huylenq/goose @ 38b46f93 (063694c + hermes-acp only, plus GOOSE_MODE), which registers
+    // huylenq/goose @ 1f1c2a4d (063694c + hermes-acp only, plus GOOSE_MODE), which registers
     // that provider and spawns `hermes-acp` or `hermes acp`. Berd does not
     // write ~/.hermes.
     id: "hermes-acp",
