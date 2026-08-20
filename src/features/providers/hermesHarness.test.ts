@@ -60,11 +60,11 @@ describe("Hermes Agent harness", () => {
     useProviderCatalogStore.getState().reset();
   });
 
-  it("pins Goose to huylenq/goose 1cddd83 (063694c + hermes-acp only)", () => {
+  it("pins Goose to huylenq/goose 38b46f93 (063694c + hermes-acp only)", () => {
     expect(gooseBackendLock).toEqual({
       repo: "https://github.com/huylenq/goose.git",
       ref: "cursor/hermes-acp-provider-0264",
-      commit: "1cddd832556a50145dd10a8fec1de11298fa9228",
+      commit: "38b46f93ab25ddd7c2aef7383aaaa875fc623b7b",
       package: "goose-cli",
       bin: "goose",
     });

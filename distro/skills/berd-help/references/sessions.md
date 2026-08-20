@@ -6,7 +6,7 @@ strings name it as; "chat" is the informal word for the same thing, not a
 separate object. A session runs on a harness — `goose`, `claude-acp`,
 `codex-acp`, `copilot-acp`, `amp-acp`, `cursor-agent`, or `hermes-acp` —
 chosen per session. `hermes-acp` needs `hermes-acp` or `hermes` on PATH
-and the Goose pin that registers that provider (huylenq/goose @ 1cddd83). A question about a specific harness's own behavior is
+and the Goose pin that registers that provider (huylenq/goose @ 38b46f93). A question about a specific harness's own behavior is
 out of scope for this skill (see the Scope section in `SKILL.md`). Within
 a session, a
 user can attach workspaces (folders/repos), tag in skills and agents, and
