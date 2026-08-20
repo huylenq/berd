@@ -82,10 +82,11 @@ export const CURATED_PROVIDER_CATALOG: ProviderCatalogEntry[] = [
     supportsAuthStatus: true,
   },
   {
-    // Listed so Settings/Doctor can show an honest unavailable state.
     // PATH discovery matches Buzz (`hermes-acp`, then `hermes`). Sessions
-    // still require Goose `setProvider("hermes-acp")`. The pin tracks
-    // huylenq/goose @ 063694c, which does not register that provider yet.
+    // call Goose `setProvider("hermes-acp")`. The lockfile pins
+    // huylenq/goose @ 1cddd83 (063694c + hermes-acp only), which registers
+    // that provider and spawns `hermes-acp` or `hermes acp`. Berd does not
+    // write ~/.hermes.
     id: "hermes-acp",
     displayName: "Hermes Agent",
     category: "agent",
@@ -101,7 +102,7 @@ export const CURATED_PROVIDER_CATALOG: ProviderCatalogEntry[] = [
     supportsInstall: false,
     supportsAuth: false,
     supportsAuthStatus: false,
-    sessionLaunchSupported: false,
+    sessionLaunchSupported: true,
   },
   // full pi support in a future update
   // {

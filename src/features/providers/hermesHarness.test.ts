@@ -1,11 +1,10 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { beforeEach, describe, expect, it } from "vitest";
 import { discoverAcpProviders } from "@/shared/api/acp";
 import { isExternalAgentProvider } from "@/shared/api/acpPersonaHandoff";
 import { crateCheckIdToProviderId } from "./lib/agentIdMap";
-import {
-  gooseCanSetProvider,
-  gooseSetProviderUnavailableMessage,
-} from "./lib/gooseSessionProviders";
+import { gooseCanSetProvider } from "./lib/gooseSessionProviders";
 import { HERMES_PATH_BINARIES } from "./lib/hermesDiscovery";
 import { readinessFromReport } from "./hooks/useAgentProviderStatus";
 import {
@@ -16,13 +15,22 @@ import {
 import { useProviderCatalogStore } from "./stores/providerCatalogStore";
 import type { DoctorCheck, DoctorReport } from "@/shared/api/doctor";
 
+const gooseBackendLock = JSON.parse(
+  readFileSync(join(process.cwd(), "goose-backend.lock.json"), "utf8"),
+) as {
+  repo: string;
+  ref: string;
+  commit: string;
+  package: string;
+  bin: string;
+};
+
 function agentCheck(overrides: Partial<DoctorCheck> = {}): DoctorCheck {
   return {
     id: "ai-agent-hermes",
     label: "Hermes Agent",
-    status: "warn",
-    message:
-      "Hermes is on PATH, but this Goose backend cannot start Hermes sessions (no hermes-acp provider).",
+    status: "pass",
+    message: "Hermes ACP launcher found on PATH",
     fixUrl:
       "https://hermes-agent.nousresearch.com/docs/user-guide/features/acp",
     fixCommand: null,
@@ -49,7 +57,17 @@ describe("Hermes Agent harness", () => {
     useProviderCatalogStore.getState().reset();
   });
 
-  it("is catalogued as an unavailable ACP harness, not a session-ready peer", () => {
+  it("pins Goose to huylenq/goose 1cddd83 (063694c + hermes-acp only)", () => {
+    expect(gooseBackendLock).toEqual({
+      repo: "https://github.com/huylenq/goose.git",
+      ref: "cursor/hermes-acp-provider-0264",
+      commit: "1cddd832556a50145dd10a8fec1de11298fa9228",
+      package: "goose-cli",
+      bin: "goose",
+    });
+  });
+
+  it("is catalogued as a session-ready ACP harness", () => {
     const entry = getCatalogEntry("hermes-acp");
     expect(entry).toMatchObject({
       id: "hermes-acp",
@@ -60,7 +78,7 @@ describe("Hermes Agent harness", () => {
       supportsInstall: false,
       supportsAuth: false,
       supportsAuthStatus: false,
-      sessionLaunchSupported: false,
+      sessionLaunchSupported: true,
     });
     expect(entry?.binaryNames).toEqual(["hermes-acp", "hermes"]);
     expect(getAgentProviders().map((provider) => provider.id)).toContain(
@@ -95,17 +113,17 @@ describe("Hermes Agent harness", () => {
     expect(isExternalAgentProvider("hermes-acp")).toBe(true);
   });
 
-  it("does not become ready from PATH alone while Goose cannot setProvider hermes-acp", () => {
-    expect(gooseCanSetProvider("hermes-acp")).toBe(false);
-    expect(gooseCanSetProvider("hermes")).toBe(false);
-    expect(gooseCanSetProvider("hermes-agent")).toBe(false);
+  it("lets Goose setProvider hermes-acp and its aliases", () => {
+    expect(gooseCanSetProvider("hermes-acp")).toBe(true);
+    expect(gooseCanSetProvider("hermes")).toBe(true);
+    expect(gooseCanSetProvider("hermes-agent")).toBe(true);
     expect(gooseCanSetProvider("claude-acp")).toBe(true);
     expect(gooseCanSetProvider("goose")).toBe(true);
+  });
 
+  it("is ready when Doctor finds hermes-acp or hermes on PATH", () => {
     const installed: DoctorReport = { checks: [agentCheck()] };
-    expect(readinessFromReport(installed).get("hermes-acp")).toBe(
-      "unavailable",
-    );
+    expect(readinessFromReport(installed).get("hermes-acp")).toBe("ready");
 
     const fallback: DoctorReport = {
       checks: [
@@ -114,23 +132,21 @@ describe("Hermes Agent harness", () => {
         }),
       ],
     };
-    expect(readinessFromReport(fallback).get("hermes-acp")).toBe("unavailable");
+    expect(readinessFromReport(fallback).get("hermes-acp")).toBe("ready");
+  });
 
+  it("is not installed when neither Hermes launcher is on PATH", () => {
     const missing: DoctorReport = {
       checks: [
         agentCheck({
           status: "fail",
           path: null,
-          message: "Hermes sessions cannot start",
+          message: "Hermes Agent is not on PATH",
         }),
       ],
     };
-    expect(readinessFromReport(missing).get("hermes-acp")).toBe("unavailable");
-    expect(readinessFromReport({ checks: [] }).get("hermes-acp")).toBe(
-      "unavailable",
-    );
-    expect(gooseSetProviderUnavailableMessage("hermes-acp")).toContain(
-      "hermes-acp",
+    expect(readinessFromReport(missing).get("hermes-acp")).toBe(
+      "not_installed",
     );
   });
 });
