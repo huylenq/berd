@@ -132,7 +132,7 @@ describe("useProviderModels", () => {
 
     act(() => {
       useProviderCatalogStore.getState().mergeEntries([
-        modelProvider("anthropic", [)
+        modelProvider("anthropic", [
           {
             key: "ANTHROPIC_API_KEY",
             label: "API Key",
