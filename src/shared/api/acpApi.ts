@@ -9,6 +9,7 @@ import type {
 } from "@agentclientprotocol/sdk";
 import { messageSnippet } from "@/features/chat/lib/messageSnippet";
 import { getCuratedAgentProviders } from "@/features/providers/curatedProviders";
+import { assertGooseCanSetProvider } from "@/features/providers/lib/gooseSessionProviders";
 import { toWireProviderId } from "./acpPersonaHandoff";
 import { getClient, interceptSessionNotifications } from "./acpConnection";
 import {
@@ -288,6 +289,7 @@ export async function setProvider(
   providerId: string,
   context: { requestId?: string } = {},
 ): Promise<AcpSessionConfigSnapshots> {
+  assertGooseCanSetProvider(providerId);
   const sid = sessionId.slice(0, 8);
   const tClient = performance.now();
   const client = await getClient();

@@ -509,12 +509,14 @@
         "verifyingInstallation": "Verifying installation..."
       },
       "refresh": "Refresh",
+      "sessionUnavailable": "Sessions cannot start. The bundled Goose backend does not provide this harness.",
       "signIn": "Sign in",
       "signInLabel": "Sign in to {{name}}",
       "status": {
         "checking": "Checking...",
         "inProgress": "Setup in progress",
-        "setupFailed": "Setup failed"
+        "setupFailed": "Setup failed",
+        "unavailable": "Unavailable"
       },
       "title": "Agent harnesses",
       "troubleshootInChat": "Troubleshoot in chat",

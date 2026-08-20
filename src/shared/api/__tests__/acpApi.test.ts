@@ -699,6 +699,15 @@ describe("provider wire translation", () => {
     });
   });
 
+  it("refuses setProvider for hermes-acp while Goose has no matching provider", async () => {
+    const { setProvider } = await import("../acpApi");
+
+    await expect(setProvider("session-9", "hermes-acp")).rejects.toThrow(
+      /bundled Goose backend has no matching provider/,
+    );
+    expect(mocks.setSessionConfigOption).not.toHaveBeenCalled();
+  });
+
   it("sets a generic session config option", async () => {
     const { setSessionConfigOption } = await import("../acpApi");
 

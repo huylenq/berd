@@ -35,7 +35,10 @@ Result:
   the app first.`,
   schema: listHarnessesSchema,
   execute: async (): Promise<ListHarnessesResult> => {
-    const [{ GOOSE_PROVIDER_ID }, { listHarnessStatuses }] = await Promise.all([
+    const [
+      { GOOSE_PROVIDER_ID },
+      { listHarnessStatuses, toWireHarnessStatus },
+    ] = await Promise.all([
       import("@/shared/api/acpPersonaHandoff"),
       import("../runtime/providers"),
     ]);
@@ -45,7 +48,7 @@ Result:
         harness_id: harness.id,
         name: harness.label,
         is_default: harness.id === GOOSE_PROVIDER_ID,
-        status: harness.readiness,
+        status: toWireHarnessStatus(harness.readiness),
       })),
     };
   },

@@ -75,6 +75,9 @@ export function useAgentModelPickerState({
 
       const catalogEntry = getCatalogEntryFromEntries(catalogEntries, agentId);
       const readiness = agentReadiness.get(agentId) ?? "not_ready";
+      if (readiness === "unavailable") {
+        continue;
+      }
       const setupAction =
         readiness === "ready"
           ? undefined

@@ -333,4 +333,32 @@ describe("useAgentModelPickerState", () => {
       { id: "codex-acp", label: "Codex", readiness: "ready" },
     ]);
   });
+
+  it("omits harnesses Goose cannot start from the session picker", () => {
+    mockUseAgentProviderStatus.mockReturnValue({
+      readyAgentIds: new Set(["goose"]),
+      agentReadiness: new Map([
+        ["goose", "ready"],
+        ["hermes-acp", "unavailable"],
+      ]),
+      loading: false,
+      refresh: mockRefreshAgentProviderStatus,
+    });
+
+    const { result } = renderHook(() =>
+      useAgentModelPickerState({
+        providers: [
+          { id: "hermes-acp", label: "Hermes Agent" },
+          { id: "codex-acp", label: "Codex" },
+        ],
+        selectedProvider: "goose",
+        onProviderSelected: vi.fn(),
+      }),
+    );
+
+    expect(result.current.pickerAgents.map((agent) => agent.id)).toEqual([
+      "goose",
+      "codex-acp",
+    ]);
+  });
 });

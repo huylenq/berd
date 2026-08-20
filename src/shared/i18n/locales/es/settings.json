@@ -512,12 +512,14 @@
         "verifyingInstallation": "Verificando instalación..."
       },
       "refresh": "Actualizar",
+      "sessionUnavailable": "No se pueden iniciar sesiones. El backend Goose incluido no ofrece este harness.",
       "signIn": "Iniciar sesión",
       "signInLabel": "Iniciar sesión en {{name}}",
       "status": {
         "checking": "Comprobando...",
         "inProgress": "Configuración en curso",
-        "setupFailed": "La configuración falló"
+        "setupFailed": "La configuración falló",
+        "unavailable": "No disponible"
       },
       "title": "Arneses de agentes",
       "troubleshootInChat": "Solucionar en chat",

@@ -3919,6 +3919,42 @@ describe("info", () => {
     });
   });
 
+  it("list_harnesses reports Hermes as not_ready even if Doctor PATH-passes", async () => {
+    mocks.discoverAcpProviders.mockResolvedValue([
+      { id: "goose", label: "Goose (Default)" },
+      { id: "hermes-acp", label: "Hermes Agent" },
+    ]);
+    mocks.readinessFromReport.mockReturnValue(
+      new Map([
+        ["goose", "ready"],
+        ["hermes-acp", "ready"],
+      ]),
+    );
+
+    const result = await dispatchCommand(
+      "info",
+      { action: "list_harnesses" },
+      ctx,
+    );
+
+    expect(result).toEqual({
+      harnesses: [
+        {
+          harness_id: "goose",
+          name: "Goose (Default)",
+          is_default: true,
+          status: "ready",
+        },
+        {
+          harness_id: "hermes-acp",
+          name: "Hermes Agent",
+          is_default: false,
+          status: "not_ready",
+        },
+      ],
+    });
+  });
+
   it("list_models serves the model picker's cache for the requested harness", async () => {
     seedModelCache("codex-acp", ["gpt-6", "gpt-6-mini"]);
 

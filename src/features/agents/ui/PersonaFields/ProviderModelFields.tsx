@@ -11,7 +11,10 @@ import {
 import { Button } from "@/shared/ui/button";
 import type { ProviderType } from "@/shared/types/agents";
 import { useAgentStore } from "@/features/agents/stores/agentStore";
-import { useAgentProviderStatus } from "@/features/providers/hooks/useAgentProviderStatus";
+import {
+  useAgentProviderStatus,
+  type AgentProviderReadiness,
+} from "@/features/providers/hooks/useAgentProviderStatus";
 import { useProviderModels } from "@/features/providers/hooks/useProviderModels";
 import { requestOpenSettings } from "@/features/settings/lib/settingsEvents";
 
@@ -59,6 +62,10 @@ export function ProviderModelFields({
   const acpProviders = useAgentStore((s) => s.providers);
   const { getModelsForAgent, getError } = useProviderModels();
   const { agentReadiness } = useAgentProviderStatus();
+  const selectableProviders = acpProviders.filter(
+    (providerOption) =>
+      (agentReadiness.get(providerOption.id) ?? "not_ready") !== "unavailable",
+  );
 
   const availableModels = provider ? getModelsForAgent(provider) : [];
   const modelStatusMessage = provider ? getError(provider) : null;
@@ -83,9 +90,7 @@ export function ProviderModelFields({
   } else if (hasSavedModelOutsideInventory) {
     modelSelectValue = `__saved__:${model}`;
   }
-  const getProviderSetupLabel = (
-    readiness: "ready" | "not_installed" | "not_ready",
-  ) =>
+  const getProviderSetupLabel = (readiness: AgentProviderReadiness) =>
     readiness === "not_installed"
       ? t("editor.installProvider")
       : t("editor.connectProvider");
@@ -138,7 +143,7 @@ export function ProviderModelFields({
             <SelectItem value="__none__">
               {t("common:labels.default")}
             </SelectItem>
-            {acpProviders.map((providerOption) => {
+            {selectableProviders.map((providerOption) => {
               const readiness =
                 agentReadiness.get(providerOption.id) ?? "not_ready";
               const isReady = readiness === "ready";

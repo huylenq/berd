@@ -503,6 +503,7 @@ export function AgentProviderCard({
   }
 
   const isReady = isBuiltIn || resolvedReadiness === "ready";
+  const isUnavailable = resolvedReadiness === "unavailable";
   const needsAuth = resolvedReadiness === "not_ready" && supportsAuth;
   const needsInstall = resolvedReadiness === "not_installed" && supportsInstall;
   const needsSetupAction = needsInstall || hasActionableUpdate;
@@ -634,6 +635,18 @@ export function AgentProviderCard({
       return (
         <div className="flex h-6 flex-shrink-0 items-center">
           <IconCheck className="size-4 text-success duration-200 motion-safe:animate-in motion-safe:fade-in" />
+        </div>
+      );
+    }
+
+    if (isUnavailable) {
+      return (
+        <div
+          role="status"
+          aria-label={t("providers.agents.status.unavailable")}
+          className="flex h-6 flex-shrink-0 items-center"
+        >
+          <IconAlertTriangle className="size-4 text-warning" />
         </div>
       );
     }
@@ -781,6 +794,11 @@ export function AgentProviderCard({
   const description = (
     <div className="space-y-1">
       <p>{provider.description}</p>
+      {isUnavailable ? (
+        <p className="text-xs text-muted-foreground">
+          {t("providers.agents.sessionUnavailable")}
+        </p>
+      ) : null}
       {showDisclosure && versionDetails ? <div>{versionDetails}</div> : null}
     </div>
   );

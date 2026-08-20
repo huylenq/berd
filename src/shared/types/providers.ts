@@ -36,6 +36,16 @@ export type ProviderCatalogEntry = Omit<
   supportsInstall?: ProviderSetupCatalogEntryDto["supportsInstall"];
   supportsAuth?: ProviderSetupCatalogEntryDto["supportsAuth"];
   supportsAuthStatus?: ProviderSetupCatalogEntryDto["supportsAuthStatus"];
+  /**
+   * Extra PATH names Doctor may accept for this harness, preferred first.
+   * `binaryName` remains the primary launcher.
+   */
+  binaryNames?: readonly string[];
+  /**
+   * False when the pinned Goose sidecar cannot `setProvider` this id.
+   * Undefined means sessions can start the same way as other catalog agents.
+   */
+  sessionLaunchSupported?: boolean;
   customProvider?: boolean;
   bundledBridge?: boolean;
   supportsModelList?: boolean;

@@ -2,11 +2,19 @@ import { useCallback, useMemo } from "react";
 import type { DoctorCheck, DoctorReport } from "@/shared/api/doctor";
 import { useDoctorReport } from "@/shared/api/useDoctorReport";
 import { crateCheckIdToProviderId } from "@/features/providers/lib/agentIdMap";
-import { CURATED_PROVIDER_CATALOG_BY_ID } from "@/features/providers/curatedProviders";
+import { gooseCanSetProvider } from "@/features/providers/lib/gooseSessionProviders";
+import {
+  CURATED_PROVIDER_CATALOG,
+  CURATED_PROVIDER_CATALOG_BY_ID,
+} from "@/features/providers/curatedProviders";
 import { useDefaultProviderReadinessStore } from "@/features/providers/stores/defaultProviderReadinessStore";
 import { getBuildFeatureState } from "@/shared/profile/buildProfile";
 
-export type AgentProviderReadiness = "ready" | "not_installed" | "not_ready";
+export type AgentProviderReadiness =
+  | "ready"
+  | "not_installed"
+  | "not_ready"
+  | "unavailable";
 
 interface UseAgentProviderStatusReturn {
   readyAgentIds: Set<string>;
@@ -33,10 +41,24 @@ function currentGooseReadiness(): AgentProviderReadiness {
   );
 }
 
+function seedUnavailableHarnesses(
+  readiness: Map<string, AgentProviderReadiness>,
+): void {
+  for (const entry of CURATED_PROVIDER_CATALOG) {
+    if (entry.category === "agent" && !gooseCanSetProvider(entry.id)) {
+      readiness.set(entry.id, "unavailable");
+    }
+  }
+}
+
 function initialReadiness(
   gooseReadiness: AgentProviderReadiness = currentGooseReadiness(),
 ): Map<string, AgentProviderReadiness> {
-  return new Map<string, AgentProviderReadiness>([["goose", gooseReadiness]]);
+  const readiness = new Map<string, AgentProviderReadiness>([
+    ["goose", gooseReadiness],
+  ]);
+  seedUnavailableHarnesses(readiness);
+  return readiness;
 }
 
 // Derive per-agent readiness from the doctor report. The crate identifies
@@ -61,6 +83,13 @@ export function readinessFromReport(
     if (providerId === "goose") continue;
 
     const provider = CURATED_PROVIDER_CATALOG_BY_ID.get(providerId);
+
+    // PATH or auth cannot make a harness ready when Goose cannot setProvider
+    // it. Seeded "unavailable" must win over Case 3 (no-auth ⇒ ready).
+    if (!gooseCanSetProvider(providerId)) {
+      readiness.set(providerId, "unavailable");
+      continue;
+    }
 
     // A two-binary ACP agent (e.g. Amp) whose main CLI is present but whose
     // ACP bridge binary is missing: the doctor crate flags it status="warn"

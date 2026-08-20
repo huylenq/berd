@@ -2,6 +2,10 @@ import {
   readinessFromReport,
   type AgentProviderReadiness,
 } from "@/features/providers/hooks/useAgentProviderStatus";
+import {
+  gooseCanSetProvider,
+  gooseSetProviderUnavailableMessage,
+} from "@/features/providers/lib/gooseSessionProviders";
 import { filterModelProvidersForRuntimeConfig } from "@/features/providers/runtimeProviderConstraints";
 import { getProviderModelSelectionHint } from "@/features/providers/modelSelectionHints";
 import { getModelProviders } from "@/features/providers/providerCatalog";
@@ -15,10 +19,34 @@ import { useRuntimeConfigStore } from "@/shared/runtime-config/runtimeConfigStor
 import { getBerdctlQueryClient } from "../../bridge/runtimeContext";
 import { CommandError } from "../types";
 
+export type WireHarnessStatus = "ready" | "not_installed" | "not_ready";
+
 export interface HarnessStatus {
   id: string;
   label: string;
   readiness: AgentProviderReadiness;
+}
+
+export function toWireHarnessStatus(
+  readiness: AgentProviderReadiness,
+): WireHarnessStatus {
+  if (readiness === "ready" || readiness === "not_installed") {
+    return readiness;
+  }
+  return "not_ready";
+}
+
+function listedReadiness(
+  harnessId: string,
+  reportReadiness: Map<string, AgentProviderReadiness> | null,
+): AgentProviderReadiness {
+  if (!gooseCanSetProvider(harnessId)) {
+    return "unavailable";
+  }
+  if (!reportReadiness) {
+    return "ready";
+  }
+  return reportReadiness.get(harnessId) ?? "not_ready";
 }
 
 export interface ModelEntry {
@@ -42,7 +70,7 @@ export async function listHarnessStatuses(): Promise<HarnessStatus[]> {
   return harnesses.map((harness) => ({
     id: harness.id,
     label: harness.label,
-    readiness: readiness ? (readiness.get(harness.id) ?? "not_ready") : "ready",
+    readiness: listedReadiness(harness.id, readiness),
   }));
 }
 
@@ -60,12 +88,15 @@ export async function findReadyHarnessOrThrow(
     );
   }
   if (match.readiness !== "ready") {
+    const reason =
+      match.readiness === "not_installed"
+        ? `Agent harness "${harnessId}" is not installed.`
+        : match.readiness === "unavailable"
+          ? gooseSetProviderUnavailableMessage(harnessId)
+          : `Agent harness "${harnessId}" is not ready (sign-in or setup required).`;
     throw new CommandError(
       "harness_not_ready",
-      (match.readiness === "not_installed"
-        ? `Agent harness "${harnessId}" is not installed.`
-        : `Agent harness "${harnessId}" is not ready (sign-in or setup required).`) +
-        ' The user must fix it in the app; pick a "ready" harness from `berdctl info harnesses`.',
+      `${reason} The user must fix it in the app; pick a "ready" harness from \`berdctl info harnesses\`.`,
     );
   }
   return match;

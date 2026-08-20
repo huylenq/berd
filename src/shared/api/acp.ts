@@ -13,6 +13,7 @@ import {
   resolveAgentProviderCatalogId,
 } from "@/features/providers/providerCatalog";
 import { CURATED_PROVIDER_CATALOG_BY_ID } from "@/features/providers/curatedProviders";
+import { assertGooseCanSetProvider } from "@/features/providers/lib/gooseSessionProviders";
 import {
   setActiveMessageId,
   clearActiveMessageId,
@@ -417,6 +418,7 @@ export async function acpCreateSession(
   const selection = resolveGooseSessionSelection(providerId, options.modelId);
   providerId = selection.providerId;
   options = { ...options, modelId: selection.modelId };
+  assertGooseCanSetProvider(providerId);
   // Only the "goose" sentinel should rely on backend defaults. Concrete
   // model providers must be sent even without a model so Goose does not try to
   // resolve a missing global GOOSE_PROVIDER.

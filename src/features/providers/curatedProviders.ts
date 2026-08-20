@@ -1,5 +1,6 @@
 import type { AcpProvider } from "@/shared/api/acp";
 import type { ProviderCatalogEntry } from "@/shared/types/providers";
+import { HERMES_PATH_BINARIES } from "@/features/providers/lib/hermesDiscovery";
 
 export const CURATED_PROVIDER_CATALOG: ProviderCatalogEntry[] = [
   {
@@ -81,24 +82,26 @@ export const CURATED_PROVIDER_CATALOG: ProviderCatalogEntry[] = [
     supportsAuthStatus: true,
   },
   {
-    // PATH-discovered ACP harness. Prefer `hermes-acp` on PATH; otherwise
-    // `hermes` with args ["acp"] (Buzz Desktop / Zed / VS Code fallback).
-    // Session launch still goes through Goose setProvider("hermes-acp").
+    // Listed so Settings/Doctor can show an honest unavailable state.
+    // PATH discovery matches Buzz (`hermes-acp`, then `hermes`). Sessions
+    // still require Goose `setProvider("hermes-acp")`; the pinned sidecar
+    // has no such provider, so this must stay sessionLaunchSupported: false.
     id: "hermes-acp",
     displayName: "Hermes Agent",
     category: "agent",
     description: "Nous Research's open-source agent",
     setupMethod: "cli_auth",
     binaryName: "hermes-acp",
+    binaryNames: HERMES_PATH_BINARIES,
     docsUrl:
       "https://hermes-agent.nousresearch.com/docs/user-guide/features/acp",
     group: "default",
     aliases: ["hermes-acp", "hermes-agent", "hermes"],
     // Discovery only: Berd must not install into or mutate ~/.hermes.
-    // Hermes owns provider credentials via `hermes model` / `hermes acp --setup`.
     supportsInstall: false,
     supportsAuth: false,
     supportsAuthStatus: false,
+    sessionLaunchSupported: false,
   },
   // full pi support in a future update
   // {
