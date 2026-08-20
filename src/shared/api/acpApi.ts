@@ -254,6 +254,9 @@ export async function setSessionConfigOption(
   value: string,
   context: Omit<AcpSessionConfigSnapshotContext, "origin"> = {},
 ): Promise<AcpSessionConfigSnapshots> {
+  if (configId === "provider") {
+    assertGooseCanSetProvider(value);
+  }
   const sid = sessionId.slice(0, 8);
   const tClient = performance.now();
   const client = await getClient();

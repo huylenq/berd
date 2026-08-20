@@ -1065,6 +1065,7 @@ describe("acpCreateSession", () => {
     "copilot-acp",
     "amp-acp",
     "cursor-agent",
+    "hermes-acp",
   ])("keeps the %s harness outside Goose provider policy", async (harnessId) => {
     await setRuntimeConfig(managedRuntimeConfig);
     mockNewSession.mockResolvedValue({ sessionId: `session-${harnessId}` });
@@ -1083,18 +1084,6 @@ describe("acpCreateSession", () => {
       "harness-model",
       noRequestModelContext(harnessId),
     );
-  });
-
-  it("refuses to create a Hermes session while Goose cannot setProvider hermes-acp", async () => {
-    await setRuntimeConfig(managedRuntimeConfig);
-    const { acpCreateSession } = await import("../acp");
-
-    await expect(
-      acpCreateSession("hermes-acp", "/tmp/project"),
-    ).rejects.toThrow(/bundled Goose backend has no matching provider/);
-
-    expect(mockNewSession).not.toHaveBeenCalled();
-    expect(mockSetProvider).not.toHaveBeenCalled();
   });
 });
 

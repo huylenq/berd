@@ -3919,7 +3919,7 @@ describe("info", () => {
     });
   });
 
-  it("list_harnesses reports Hermes as not_ready even if Doctor PATH-passes", async () => {
+  it("list_harnesses reports Hermes ready when Doctor PATH-passes", async () => {
     mocks.discoverAcpProviders.mockResolvedValue([
       { id: "goose", label: "Goose (Default)" },
       { id: "hermes-acp", label: "Hermes Agent" },
@@ -3949,7 +3949,7 @@ describe("info", () => {
           harness_id: "hermes-acp",
           name: "Hermes Agent",
           is_default: false,
-          status: "not_ready",
+          status: "ready",
         },
       ],
     });

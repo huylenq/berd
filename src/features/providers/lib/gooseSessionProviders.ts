@@ -1,19 +1,20 @@
 import { CURATED_PROVIDER_CATALOG_BY_ID } from "@/features/providers/curatedProviders";
+import { resolveAgentProviderCatalogId } from "@/features/providers/providerCatalog";
 
 /**
  * Whether the pinned Goose sidecar can accept this id via
  * `setSessionConfigOption(configId=provider)`.
  *
- * Hermes is catalogued so Settings/Doctor can show an honest unavailable
- * state, but the current Goose pin has no `hermes-acp` provider. Do not
- * treat PATH discovery as session-ready.
+ * Resolve aliases first so `"hermes"` / `"hermes-agent"` follow the
+ * catalog entry instead of fail-opening as an unknown id.
  */
 export function gooseCanSetProvider(providerId: string): boolean {
   if (providerId === "goose") {
     return true;
   }
+  const catalogId = resolveAgentProviderCatalogId(providerId) ?? providerId;
   return (
-    CURATED_PROVIDER_CATALOG_BY_ID.get(providerId)?.sessionLaunchSupported !==
+    CURATED_PROVIDER_CATALOG_BY_ID.get(catalogId)?.sessionLaunchSupported !==
     false
   );
 }
