@@ -78,7 +78,7 @@ lock_package="$(read_lock_field package)"
 lock_bin="$(read_lock_field bin)"
 
 mode="${GOOSE_DEV_MODE:-auto}"
-clone_url="${GOOSE_DEV_CLONE_URL:-${lock_repo:-https://github.com/aaif-goose/goose.git}}"
+clone_url="${GOOSE_DEV_CLONE_URL:-${lock_repo:-https://github.com/huylenq/goose.git}}"
 remote="${GOOSE_DEV_REMOTE:-origin}"
 pinned_ref="${GOOSE_DEV_REF:-${GOOSE_DEV_BRANCH:-${lock_ref:-main}}}"
 pinned_commit="${GOOSE_DEV_COMMIT:-$lock_commit}"

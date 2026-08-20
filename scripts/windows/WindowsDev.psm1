@@ -851,7 +851,7 @@ function Get-GooseBackendSettings {
         $repo = Get-ObjectValue $lock "repo"
     }
     if ([string]::IsNullOrWhiteSpace($repo)) {
-        $repo = "https://github.com/aaif-goose/goose.git"
+        $repo = "https://github.com/huylenq/goose.git"
     }
 
     $ref = $env:GOOSE_DEV_REF

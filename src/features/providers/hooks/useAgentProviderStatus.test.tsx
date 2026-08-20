@@ -585,12 +585,12 @@ describe("useAgentProviderStatus", () => {
     expect(result.current.readyAgentIds.has("amp-acp")).toBe(false);
   });
 
-  it("marks Hermes ready when a PATH launcher is present", async () => {
+  it("keeps Hermes unavailable even when a PATH launcher is present", async () => {
     runDoctor.mockResolvedValue(
       report([
         check({
           id: "ai-agent-hermes",
-          status: "pass",
+          status: "warn",
           path: "/home/user/.local/bin/hermes-acp",
           authStatus: null,
         }),
@@ -603,7 +603,7 @@ describe("useAgentProviderStatus", () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.agentReadiness.get("hermes-acp")).toBe("ready");
-    expect(result.current.readyAgentIds.has("hermes-acp")).toBe(true);
+    expect(result.current.agentReadiness.get("hermes-acp")).toBe("unavailable");
+    expect(result.current.readyAgentIds.has("hermes-acp")).toBe(false);
   });
 });

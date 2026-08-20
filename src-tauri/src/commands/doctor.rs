@@ -292,9 +292,9 @@ const HERMES_AGENT_CHECK: LocalPathCheck = LocalPathCheck {
     // src/features/providers/lib/hermesDiscovery.ts
     // Buzz Desktop / Zed / VS Code: prefer `hermes-acp`, else `hermes`.
     binary_names: &["hermes-acp", "hermes"],
-    found_status: CheckStatus::Pass,
-    pass_message: "Hermes ACP launcher found on PATH",
-    fail_message: "Hermes Agent is not on PATH. Install Hermes and ensure `hermes-acp` or `hermes` resolves (often ~/.local/bin).",
+    found_status: CheckStatus::Warn,
+    pass_message: "Hermes is on PATH, but this Goose backend cannot start Hermes sessions (no hermes-acp provider).",
+    fail_message: "Hermes sessions cannot start: this Goose backend has no hermes-acp provider. PATH discovery looks for `hermes-acp` then `hermes` (often ~/.local/bin).",
 };
 
 const LOCAL_DOCTOR_REGISTRY: LocalDoctorRegistry<'static> = LocalDoctorRegistry {
@@ -2547,7 +2547,8 @@ mod tests {
 
         let only_acp =
             run_local_path_check(&HERMES_AGENT_CHECK, &dir.path().to_string_lossy()).await;
-        assert_eq!(only_acp.status, CheckStatus::Pass);
+        assert_eq!(only_acp.status, CheckStatus::Warn);
+        assert!(only_acp.message.contains("cannot start Hermes sessions"));
         assert_eq!(only_acp.id, "ai-agent-hermes");
         assert_eq!(only_acp.category, "agents");
         assert!(
@@ -2563,7 +2564,7 @@ mod tests {
         write_fake_binary(fallback_dir.path(), "hermes");
         let fallback =
             run_local_path_check(&HERMES_AGENT_CHECK, &fallback_dir.path().to_string_lossy()).await;
-        assert_eq!(fallback.status, CheckStatus::Pass);
+        assert_eq!(fallback.status, CheckStatus::Warn);
         assert!(
             fallback
                 .path
@@ -2580,6 +2581,7 @@ mod tests {
         .await;
         assert_eq!(missing.status, CheckStatus::Fail);
         assert!(missing.path.is_none());
+        assert!(missing.message.contains("no hermes-acp provider"));
         assert!(missing.message.contains("hermes-acp"));
     }
 

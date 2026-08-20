@@ -699,28 +699,22 @@ describe("provider wire translation", () => {
     });
   });
 
-  it("passes hermes-acp through setProvider", async () => {
+  it("refuses setProvider for hermes-acp while Goose has no matching provider", async () => {
     const { setProvider } = await import("../acpApi");
 
-    await setProvider("session-9", "hermes-acp");
-
-    expect(mocks.setSessionConfigOption).toHaveBeenCalledWith({
-      sessionId: "session-9",
-      configId: "provider",
-      value: "hermes-acp",
-    });
+    await expect(setProvider("session-9", "hermes-acp")).rejects.toThrow(
+      /bundled Goose backend has no matching provider/,
+    );
+    expect(mocks.setSessionConfigOption).not.toHaveBeenCalled();
   });
 
-  it("gates setSessionConfigOption(provider=…) the same way as setProvider", async () => {
+  it("refuses setSessionConfigOption(provider=hermes-acp) while Goose has no matching provider", async () => {
     const { setSessionConfigOption } = await import("../acpApi");
 
-    await setSessionConfigOption("session-9", "provider", "hermes-acp");
-
-    expect(mocks.setSessionConfigOption).toHaveBeenCalledWith({
-      sessionId: "session-9",
-      configId: "provider",
-      value: "hermes-acp",
-    });
+    await expect(
+      setSessionConfigOption("session-9", "provider", "hermes-acp"),
+    ).rejects.toThrow(/bundled Goose backend has no matching provider/);
+    expect(mocks.setSessionConfigOption).not.toHaveBeenCalled();
   });
 
   it("sets a generic session config option", async () => {

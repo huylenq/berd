@@ -126,7 +126,6 @@ export const CURATED_HARNESS_IDS = [
   "copilot-acp",
   "amp-acp",
   "cursor-agent",
-  "hermes-acp",
 ] as const;
 
 export type CuratedHarnessId = (typeof CURATED_HARNESS_IDS)[number];
