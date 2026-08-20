@@ -149,6 +149,44 @@ export function GoogleGeminiIcon({ className = "" }: { className?: string }) {
   );
 }
 
+export function HermesIcon({ className = "" }: { className?: string }) {
+  const gradientId = `${useId().replace(/:/g, "")}-hermes-fill`;
+
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden="true"
+    >
+      <title>Hermes Agent</title>
+      <defs>
+        <linearGradient
+          id={gradientId}
+          x1="4"
+          x2="20"
+          y1="3"
+          y2="21"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#F3C15B" />
+          <stop offset="1" stopColor="#C4842A" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M12 2.2c.4 0 .74.23.9.58l1.42 3.08 2.38-1.18a1 1 0 011.38 1.2l-1.1 3.2 3.32.2a1 1 0 01.72 1.62L18.4 13l2.62 2.1a1 1 0 01-.42 1.76l-3.3.5.7 3.24a1 1 0 01-1.46 1.08L12 19.4l-4.54 2.28a1 1 0 01-1.46-1.08l.7-3.24-3.3-.5a1 1 0 01-.42-1.76L5.6 13 3.08 10.9a1 1 0 01.72-1.62l3.32-.2-1.1-3.2a1 1 0 011.38-1.2l2.38 1.18L11.1 2.78c.16-.35.5-.58.9-.58z"
+        fill={`url(#${gradientId})`}
+      />
+      <path
+        d="M9.2 9.1h1.55v2.35h2.5V9.1h1.55v6.1H13.25v-2.4h-2.5v2.4H9.2z"
+        fill="#1A1308"
+      />
+    </svg>
+  );
+}
+
 export function AmpIcon({ className = "" }: { className?: string }) {
   return (
     <svg
@@ -439,6 +477,9 @@ const PROVIDER_ICON_MAP: Record<string, (className: string) => ReactNode> = {
   cursor: (className) => <CursorIcon className={className} />,
   amp: (className) => <AmpIcon className={className} />,
   "amp-acp": (className) => <AmpIcon className={className} />,
+  hermes: (className) => <HermesIcon className={className} />,
+  "hermes-acp": (className) => <HermesIcon className={className} />,
+  "hermes-agent": (className) => <HermesIcon className={className} />,
   azure: (className) => <AzureOpenAIIcon className={className} />,
   azure_openai: (className) => <AzureOpenAIIcon className={className} />,
   bedrock: (className) => <BedrockIcon className={className} />,

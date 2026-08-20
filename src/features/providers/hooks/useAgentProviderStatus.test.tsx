@@ -584,4 +584,26 @@ describe("useAgentProviderStatus", () => {
     expect(result.current.agentReadiness.get("amp-acp")).toBe("not_installed");
     expect(result.current.readyAgentIds.has("amp-acp")).toBe(false);
   });
+
+  it("marks Hermes ready once either PATH launcher is present", async () => {
+    runDoctor.mockResolvedValue(
+      report([
+        check({
+          id: "ai-agent-hermes",
+          status: "pass",
+          path: "/home/user/.local/bin/hermes-acp",
+          authStatus: null,
+        }),
+      ]),
+    );
+
+    const { result } = renderHook(() => useAgentProviderStatus(), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.agentReadiness.get("hermes-acp")).toBe("ready");
+    expect(result.current.readyAgentIds.has("hermes-acp")).toBe(true);
+  });
 });

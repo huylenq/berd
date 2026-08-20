@@ -91,6 +91,7 @@ describe("isExternalAgentProvider", () => {
   it("treats other agent harnesses as external", () => {
     expect(isExternalAgentProvider("claude-acp")).toBe(true);
     expect(isExternalAgentProvider("codex-acp")).toBe(true);
+    expect(isExternalAgentProvider("hermes-acp")).toBe(true);
   });
 
   it("treats unknown/undefined provider as not external", () => {

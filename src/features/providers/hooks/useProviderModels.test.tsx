@@ -127,11 +127,12 @@ describe("useProviderModels", () => {
       "codex-acp",
       "copilot-acp",
       "cursor-agent",
+      "hermes-acp",
     ]);
 
     act(() => {
       useProviderCatalogStore.getState().mergeEntries([
-        modelProvider("anthropic", [
+        modelProvider("anthropic", [)
           {
             key: "ANTHROPIC_API_KEY",
             label: "API Key",
@@ -151,6 +152,7 @@ describe("useProviderModels", () => {
       "codex-acp",
       "copilot-acp",
       "cursor-agent",
+      "hermes-acp",
     ]);
 
     act(() => {

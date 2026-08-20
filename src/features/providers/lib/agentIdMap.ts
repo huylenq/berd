@@ -13,6 +13,7 @@ const CRATE_TO_PROVIDER: Record<string, string> = {
   "ai-agent-copilot": "copilot-acp",
   "ai-agent-pi": "pi-acp",
   "ai-agent-cursor": "cursor-agent",
+  "ai-agent-hermes": "hermes-acp",
 };
 
 export function crateCheckIdToProviderId(checkId: string): string | null {

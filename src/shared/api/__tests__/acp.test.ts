@@ -1065,6 +1065,7 @@ describe("acpCreateSession", () => {
     "copilot-acp",
     "amp-acp",
     "cursor-agent",
+    "hermes-acp",
   ])("keeps the %s harness outside Goose provider policy", async (harnessId) => {
     await setRuntimeConfig(managedRuntimeConfig);
     mockNewSession.mockResolvedValue({ sessionId: `session-${harnessId}` });

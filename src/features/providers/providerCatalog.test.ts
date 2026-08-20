@@ -78,6 +78,7 @@ describe("provider catalog selectors", () => {
       "copilot-acp",
       "amp-acp",
       "cursor-agent",
+      "hermes-acp",
     ]);
     expect(getModelProviders().map((provider) => provider.id)).toEqual([
       "databricks_v2",
@@ -143,6 +144,13 @@ describe("provider catalog selectors", () => {
     expect(
       resolveAgentProviderCatalogId("custom-id", "Codex compatible API"),
     ).toBeNull();
+  });
+
+  it("matches Hermes Agent aliases from the curated catalog", () => {
+    expect(resolveAgentProviderCatalogId("hermes")).toBe("hermes-acp");
+    expect(resolveAgentProviderCatalogId("hermes-agent", "Hermes Agent")).toBe(
+      "hermes-acp",
+    );
   });
 
   it("does not treat model providers as agents", () => {
